@@ -1,0 +1,8 @@
+flask>=3.0
+wechatpy>=1.8
+python-dotenv>=1.0
+openai>=1.0
+waitress>=3.0
+cryptography>=41.0
+pytest>=8.0
+pytest-flask>=1.3
