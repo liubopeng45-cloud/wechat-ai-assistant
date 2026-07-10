@@ -1,0 +1,32 @@
+"""微信公众号 AI 客服 —— 主程序"""
+import hashlib
+from flask import Flask, request, make_response
+from concurrent.futures import ThreadPoolExecutor
+from wechatpy import parse_message
+from wechatpy.replies import TextReply
+from ai import DeepSeekClient, SYSTEM_PROMPT
+from memory import InMemoryMemory
+from wechat import WeChatAPI
+
+app = Flask(__name__)
+app.config.from_object('config')
+
+ai_client = DeepSeekClient(
+    api_key=app.config['DEEPSEEK_API_KEY'],
+    base_url=app.config['DEEPSEEK_BASE_URL'],
+    model=app.config['DEEPSEEK_MODEL'],
+    timeout=30,
+)
+memory = InMemoryMemory(max_turns=10)
+wechat_api = WeChatAPI(
+    app_id=app.config['WECHAT_APP_ID'],
+    app_secret=app.config['WECHAT_APP_SECRET'],
+)
+executor = ThreadPoolExecutor(max_workers=4)
+
+@app.route('/wechat', methods=['GET', 'POST'])
+def wechat():
+    token = app.config['WECHAT_TOKEN']
+    if request.method == 'GET':
+        return _verify_server(token)
+    return _handle_message()
